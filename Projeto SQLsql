@@ -1,0 +1,252 @@
+--1
+      select nm_cidade, cd_estado
+      from loc_cidade
+      where cd_estado = 'SP' and nm_cidade like 'A%'
+
+--2
+select nm_func, vl_salario , nm_cargo
+from loc_funcionario
+where nm_cargo = 'Analista de Atendimento Sr'
+
+--3
+select substr(desc_cfo, 1, 30), substr(APLiCACAO, 1, 120) from loc_cfo
+
+--4
+SELECT 'o proprietario ' || nome_proprietario || ', reside no estado de ' || cd_estado
+FROM loc_proprietario, loc_endereco_proprietario;
+--esta sem a virgula para os dois se juntarem 
+
+--5
+SELECT
+    nome_proprietario AS nome_do_proprietario,
+    telefone,
+    DECODE(tp_proprietario, 'F', nr_cpf, 'J', nr_cgc, 'Tipo de proprietário desconhecido') AS documento
+FROM loc_proprietario;
+--se f trazer da coluna cpf se j trazer coluna cgc, a função retornará a string 'Tipo de proprietário desconhecido', para lidar com algum possível valor inesperado.
+
+--6
+select * from loc_cliente
+select * from loc_endereco_cliente
+select nm_cliente, from loc_cliente, loc_endereco_cliente
+--faltando tabela loc_endereco_cliente nao possivel concluir
+
+--7
+
+select cd_cliente,nm_cliente,telefone from loc_cliente
+where mod(cd_cliente, 2) = 0
+
+--8
+select cd_cliente,nm_cliente,telefone from loc_cliente
+where nm_cliente like '%S/A%'
+
+--9
+SELECT CD_PROPRIETARIO, Nome_PROPRIETARIO
+FROM LOC_PROPRIETArio
+
+--10
+SELECT Cd_CLIENTE, NM_CLIENTE 
+FROM LOC_CLIENTE WHeRE  substr(nm_cliente,1,1) = 'A';
+
+--11
+SELECT 'Eu tenho ' || (TRUNC(sysdate) - TO_DATE('2006-04-10', 'YYYY-MM-DD')) || ' dias de vida' AS resultado
+FROM dual;
+
+--12
+SELECT 'Eu tenho ' || (MONTHS_BETWEEN(sysdate, TO_DATE('2006-04-10', 'YYYY-MM-DD'))) || ' meses de vida' AS resultado
+FROM dual;
+
+--13
+select nm_func,vl_salario, vl_salario * 12 as salario_anual from loc_funcionario
+
+--14
+select 
+max(vl_salario) as maior_salario,
+min(vl_salario) as menor_salario,
+avg (vl_salario) as media_salario
+from loc_funcionario
+
+--15
+select nm_func,
+vl_salario
+from loc_funcionario
+where vl_salario > 4000
+order by vl_salario desc
+
+--16
+select nr_pedido, dt_locacao from LOC_PEDIDO_LOCACAO
+where dt_locacao between to_date('2005-10-22', 'YYYY-MM-DD') AND TO_DATE('2005-11-24', 'YYYY-MM-DD')
+order by  nr_pedido asc
+
+--17
+SELECT
+    TO_CHAR(dt_locacao, 'YYYY/MM') AS mes_ano,
+    COUNT(nr_pedido) AS total_pedidos,
+    SUM(vl_total) AS total_valor_locacoes
+FROM LOC_PEDIDO_LOCACAO
+GROUP BY TO_CHAR(dt_locacao, 'YYYY/MM')
+ORDER BY TO_CHAR(dt_locacao, 'YYYY/MM');
+
+--18
+SELECT
+    COUNT(*) AS total_func_com_comissao
+FROM loc_funcionario
+WHERE vl_perc_comissao IS NOT NULL;
+
+--19
+select count(cd_func) as pedidos_atendido_func4
+from LOC_PEDIDO_LOCACAO
+where cd_func = 4
+
+--20
+select count(tipo_automovel) from loc_veiculo 
+where COMBUSTIVEL = 'GASOLINA' AND COR = 'PRETA'
+
+--21
+select combustivel, count(*)
+from loc_veiculo
+group by COMBUSTIVEL
+
+
+-22
+select dt_locacao, count(*) from loc_pedido_locacao group by dt_locacao
+
+
+--23
+
+SELECT COUNT(DISTINCT CD_CLIENTE) AS quantidade_clientes
+FROM loc_pedido_locacao
+WHERE TP_PAGTO = 'DI' AND vl_total BETWEEN 400 AND 600;
+
+--24
+SELECT
+   COUNT(*) AS quantidade,
+    DECODE(tp_proprietario, 'F', nr_cpf, 'J', nr_cgc, 'Tipo de proprietário desconhecido') AS CPF_E_PJ
+FROM loc_Proprietario
+GROUP BY  DECODE(tp_proprietario, 'F', nr_cpf, 'J', nr_cgc, 'Tipo de proprietário desconhecido');
+
+
+--25
+select nm_cliente, vl_total from loc_cliente,loc_PEDIDO_locacao
+WHERE NM_CLIENTE = 'MOVEIS RIBEIRO LTDA'
+AND EXTRACT(YEAR FROM TO_DATE(dt_locacao, 'DD-MON-YY')) = 2005;
+
+--26
+SELECT DECODE(TP_PAGTO,'DI','DINHEIRO','CH','CHEQUE','BB','BOLETO','OUTROS')AS Tipo_Pagamento ,
+COUNT(*) AS COUNT
+FROM LOC_PEDIDO_LOCACAO
+WHERE  DT_RETIRADA > SYSDATE-200 GROUP BY TP_PAGTO
+
+
+--27 (chat)
+Crie uma pesquisa que exiba o nome do proprietário, o endereço, o tipo de endereço, o telefone, o tipo de proprietário para todos os proprietários cadastrados? 
+(mesmos os proprietários que não tenham endereço cadastrado). Quando o tipo do proprietário for do tipo “J” exibir o literal “Pessoa Jurídica” , 
+quando for “F” exibir “Pessoa Fisica” e em caso contrário, exibir “Não definido”
+
+SELECT * FROM LOC_PROPRIETARIO
+
+SELECT * FROM LOC_ENDERECO_PROPRIETARIO
+
+
+SELECT
+    p.NOME_PROPRIETARIO,
+    COALESCE(ep.LOGRADOURO, 'Endereço não cadastrado') AS LOGRADOURO,
+    p.TELEFONE, ep.tp_endereco,
+    CASE p.TP_PROPRIETARIO
+        WHEN 'J' THEN 'Pessoa Jurídica'
+        WHEN 'F' THEN 'Pessoa Física'
+        ELSE 'Não definido'
+    END AS TP_PROPRIETARIO
+FROM LOC_PROPRIETARIO p
+LEFT JOIN LOC_ENDERECO_PROPRIETARIO ep ON p.cD_PROPRIETARIO = ep.cD_PROPRIETARIO;
+
+
+--28
+select * from loc_proprietario
+
+SELECT * FROM LOC_ENDERECO_PROPRIETARIO
+
+SELECT
+    a.cd_proprietario,
+    a.nome_proprietario,
+    b.cd_cidade
+FROM
+    loc_proprietario a
+JOIN
+    LOC_ENDERECO_PROPRIETARIO b ON a.cd_proprietario = b.cd_proprietario
+WHERE
+    b.bairro IN ('CENTRO', 'SANTANA');
+
+--29
+
+select * from loc_veiculo
+
+select * from loc_grupo
+
+select nr_placa,KM_ATUAL,combustivel,status,cor,b.ds_grupo from loc_veiculo a 
+join loc_grupo b on a.cd_grupo = b.cd_GRUPO
+order by nr_placa
+
+--30
+select * from loc_veiculo
+
+
+select * from loc_grupo
+
+select a.nr_placa from loc_veiculo a
+join loc_grupo b on b.cd_grupo = a.cd_grupo
+where b.ds_grupo like '%com ar condicionado%'
+
+--31
+SELECT
+    a.cd_operadora,
+    a.nm_operadora,
+    c.cidade_ddd,
+    d.desc_prefixo
+FROM
+    loc_operadora a
+JOIN
+    loc_operadora_ddd b ON a.cd_operadora = b.cd_operadora
+JOIN
+    loc_ddd c ON b.cd_ddd = c.cd_ddd
+JOIN
+    loc_ddd_prefixo e ON c.cd_ddd = e.cd_ddd
+JOIN
+    loc_prefixo d ON e.cd_prefixo = d.cd_prefixo;
+
+--32
+select 
+substr(a.nome_proprietario,1, 15),
+b.nr_placa,
+b.combustivel,
+b.modelo,
+c.nr_pedido,
+c.dt_retirada,
+c.vl_total
+from loc_proprietario a
+join 
+loc_veiculo b on a.cd_proprietario = b.cd_proprietario
+join 
+loc_item_locacao c on b.nr_placa = c.nr_placa
+
+
+--33 SEM DADOS
+Crie uma consulta que retorne o nome da cidade, 
+a sigla do estado, o bairro da cidade e a quantidade total 
+de agência agrupada por bairro, cidade e estado.
+
+select 
+a.nm_cidade,
+c.nm_estado,
+b.bairro,
+count(d.cd_agencia)
+from 
+loc_cidade a
+join
+loc_endereco_cliente b on a.cd_cidade = b.cd_cidade
+join
+loc_estado c on a.cd_estado = c.cd_estado
+join 
+loc_agencia d on a.cd_estado = d.cd_estado
+group by b.bairro, a.nm_cidade, c.nm_estado
+
+
